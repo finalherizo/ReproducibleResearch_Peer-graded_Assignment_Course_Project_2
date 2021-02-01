@@ -8,9 +8,9 @@ if (!exists("stormdata")) {
 }
 
 #  Official event types
-official_event_types <- c("ASTRONOMICAL LOW TIDE", "AVALANCHE", "BLIZZARD",
-                          "COASTAL FLOOD", "COLD/WIND CHILL", "DEBRIS FLOW",
-                          "DENSE FOG", "DENSE SMOKE", "DROUGHT", "DUST DEVIL",
+official_event_types <- c("ASTRONOMICAL LOW TIDE", "ASTRONOMICAL HIGH TIDE",
+                          "AVALANCHE", "BLIZZARD", "COASTAL FLOOD", "COLD/WIND CHILL",
+                          "DEBRIS FLOW", "DENSE FOG", "DENSE SMOKE", "DROUGHT", "DUST DEVIL",
                           "DUST STORM", "EXCESSIVE HEAT", "EXTREME COLD/WIND CHILL",
                           "FLASH FLOOD", "FLOOD", "FROST/FREEZE", "FUNNEL CLOUD",
                           "FREEZING FOG", "HAIL", "HEAT", "HEAVY RAIN", "HEAVY SNOW",
@@ -25,6 +25,7 @@ official_event_types <- c("ASTRONOMICAL LOW TIDE", "AVALANCHE", "BLIZZARD",
 
 replacement_list <- list(
   c("ASTRONOMICAL LOW TIDE"),
+  c("ASTRONOMICAL HIGH TIDE"),
   c("AVALANCHE"),
   c("BLIZZARD"),
   c("COASTAL FLOOD", "COASTAL FLOODING"),
