@@ -1,0 +1,63 @@
+---
+title: "Storm Data Analysis"
+author: "Herizo RAJOELISON"
+date: "1/24/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+sys_locale <- Sys.getlocale("LC_ALL")
+Sys.setlocale("LC_ALL", "C")
+```
+
+# Analysys of Storm Data and the effects by type
+
+Synopsis: Immediately after the title, there should be a synopsis which describes and summarizes your analysis in at most 10 complete sentences.
+
+## Data Processing
+
+Data is loaded from the initial source and then uncompressed inside the data folder. Some checks are made to ensure that the destination folder exists.
+
+```{r, results='hide', message=FALSE}
+library(dplyr)
+library(R.utils)
+stormdata_url <- "https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2FStormData.csv.bz2"
+stormdata_filename <- "repdata_data_StormData.csv"
+stormdata_filepath <- file.path("./data/", stormdata_filename)
+stormdata_archivename <- "repdata_data_StormData.csv.bz2"
+stormdata_archivepath <- file.path("./data/", stormdata_archivename)
+if (!file.exists(stormdata_archivepath)) {
+  download.file(stormdata_url, stormdata_archivepath)
+}
+
+bunzip2(stormdata_archivepath, stormdata_filepath, remove=FALSE, skip=TRUE)
+```
+
+The data is read inside the *stormdata* variable.
+
+```{r, cache=TRUE}
+stormdata <- read.csv(stormdata_filepath)
+
+row_count <- nrow(stormdata)
+col_count <- ncol(stormdata)
+```
+
+Before cleanup, the data contains `r col_count` columns and `r row_count` rows.
+
+```{r}
+column_labels <- colnames(stormdata)
+print(column_labels)
+```
+
+```{r}
+print(unique(trimws(stormdata$EVTYPE)))
+```
+
+## Results
+
+There should be a section titled Results in which your results are presented.
+
+```{r}
+Sys.setlocale("LC_ALL", sys_locale)
+```
