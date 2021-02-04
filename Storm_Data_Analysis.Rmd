@@ -15,7 +15,13 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Analysys of Storm Data and the effects by type
 
-Synopsis: Immediately after the title, there should be a synopsis which describes and summarizes your analysis in at most 10 complete sentences.
+This document constitutes a simple analysis of the StormData Weather events dataset and their impacts across the United States.
+
+It seems that population health and the economy are impacted by approximately the same types of events but with varying degrees.
+
+To the population health, the most harmful events are `TORNADO`, `EXCESSIVE HEAT` and `FLOOD`, making **51%** of the total.
+
+On the other side, `FLOOD`, `HURRICANE (TYPHOON)` and `STORM SURGE/TIDE` have the most impacts to the economy, with **67%** of the total amount.
 
 ## Data Processing
 
@@ -86,7 +92,7 @@ print(official_event_types)
 
 ### Event types uniformization
 
-For the grouping a more manual approach has been chosen as it seemed to allow finer control on the groups and faster than using regular expressions. A list of similar event types based on the official events list is created. Every element of the list contains a vector of the types thought to be similar enough. The first element of each entry is the official name of the event. 
+For the grouping, a more manual approach has been chosen as it seemes to allow finer control on the groups and faster than using regular expressions. A list of similar event types based on the official events list is created. Every element of the list contains a vector of the types thought to be similar enough. The first element of each entry is the official name of the event. 
 
 A lookup table is built from this list allowing a replacement from the initial table's event types to the types from the previous official list.
 
@@ -392,21 +398,17 @@ names(propdmgexp_table) <- c("PROPDMGEXP", "NEWPROPDMGEXP")
 print(head(cropdmgexp_table))
 
 print(head(propdmgexp_table))
-
-print(nrow(lookup_table))
-print(nrow(cropdmgexp_table))
-print(nrow(propdmgexp_table))
 ```
 
 ### Data transformation
 
-From those tables, a new data frame is created by joining them with the initial stormdata. `left_join`s are used to mach the lists between them. This allows the non uniform entries from the initial data to be replaced by the cleaned entries from the list.
+From those tables, a new data frame is created by joining them with the initial stormdata. `left_join`s are used to match the lists between them. This allows the non uniform entries from the initial data to be replaced by the cleaned entries from the list.
 
 To ease the matching, the initial event types are cleaned up by transforming them into upper case and removing the spaces before and after them.
 
-New columns (`CROPDMG_AMOUNT`, `PROPDMG_AMOUNT`, `POPULATION_AMOUNT`, `ECONOMIC_AMOUNT`) are created by using the numerical values obtained from the joins.
+New columns (`BGN_YEAR`, `CROPDMG_AMOUNT`, `PROPDMG_AMOUNT`, `POPULATION_AMOUNT`, `ECONOMIC_AMOUNT`) are created by using the numerical values obtained from the joins.
 
-Only the columns `BGN_DATE`, `BGN_TIME`, `COUNTYNAME`, `STATE`, `EVTYPE`, `INJURIES`, `FATALITIES`, `PROPDMG_AMOUNT`, `CROPDMG_AMOUNT`, `POPULATION_AMOUNT`, `ECONOMIC_AMOUNT` are selected for the need of the analysis. `distinct` is used to remove duplicate rows probably caused by character encoding problems.
+Only the columns `BGN_YEAR`, `BGN_DATE`, `BGN_TIME`, `COUNTYNAME`, `STATE`, `EVTYPE`, `INJURIES`, `FATALITIES`, `PROPDMG_AMOUNT`, `CROPDMG_AMOUNT`, `POPULATION_AMOUNT`, `ECONOMIC_AMOUNT` are selected for the need of the analysis. `distinct` is used to remove duplicate rows created by the joins, probably caused by character encoding problems.
 
 The new data is grouped by the year of the events and their types.
 
@@ -436,7 +438,7 @@ clean_data_nrows <- nrow(clean_data)
 
 ### Cleaning method helper
 
-A little drawback for this method is that the list of event types from the data is too diverse and some are combined. After each transformation a list of non replaced types is built and ordered bases on the numbers of observations in each. This is to help the iterative process of placing the most important types into the previous replacement table.
+A little drawback on using this method is that the list of event types from the data is too diverse and some are combined. To help, a list of non replaced types is built after each transformation. The list is ordered based on the numbers of observations for each type. This eases the iterative process by placing the most important types into the official types group.
 
 ```{r}
 remaining <- clean_data[!clean_data$EVTYPE %in% official_event_types,] %>%
@@ -448,7 +450,11 @@ remaining <- clean_data[!clean_data$EVTYPE %in% official_event_types,] %>%
 
 ### Final cleanup
 
-The iterative process is stopped when it becomes difficult to match the event types against the official list. The `TEMPERATURE RECORD` type for example contains positive record (`HEAT`) and negative records (`EXTREME COLD/WIND CHILL`). It becomes necessary to also look inside the `REMARKS` field for the match to be correct enough. The rest of the data can be discarded as it is only a small proportion of the `clean_data` table. The rows with unnoficial event types are filtered out from the final data.
+The process is stopped when it becomes difficult to match the remaining event types against the official list.
+
+The `TEMPERATURE RECORD` type for example contains positive record (`HEAT`) and negative records (`EXTREME COLD/WIND CHILL`). It also becomes necessary to look inside the `REMARKS` field for the match to be correct enough. 
+
+As a result, the rest of the data can be discarded as it is only a small proportion of the `clean_data` table. The rows with unofficial event types are filtered out from the final data.
 
 ```{r}
 clean_data <- clean_data[clean_data$EVTYPE %in% official_event_types,]
@@ -456,7 +462,7 @@ clean_data <- clean_data[clean_data$EVTYPE %in% official_event_types,]
 official_events_nrows <- nrow(clean_data)
 ```
 
-Some analysis on the data show that there are years with only few recorded event types. Those years are also removed to mitigate the bias that those can produce.
+Some analysis on the data show that there are years with only few recorded event types. Those years are also removed to mitigate the bias that they can induce.
 
 ```{r}
 # Event types by year
@@ -532,14 +538,14 @@ top10_population %>%
   kable(col.names = c("Event", "Amount (count)", "Percentage"))
 ```
 
-The following figure shows the impact of each event types to population health. Past the top 3 events, there are multiple events that have relatively the same impact.
+The following figure shows the impact of each event type to population health. Past the top 3 events, there are few events that have about the same relative impact.
 
 ```{r, fig.width = 8, fig.height = 7}
 par(mar = c(6, 12, 2, 2))
 
 barplot(height = population_impacts$POPULATION_IMPACT, names=population_impacts$EVTYPE,
         horiz = TRUE, las=1, cex.names = .5, cex.axis = .8, col="#69b3a2",
-        main = "Population health impacts of each event types",
+        main = "Population health impacts of each event type",
         xlab = "Health impact (count)")
 ```
 
@@ -552,7 +558,7 @@ top10_economic <- economic_impacts %>%
   mutate(ECONOMIC_IMPACT = format(ECONOMIC_IMPACT, big.mark=","))
 ```
 
-The table bellow shows the `r nrow(top10_economic)` most harmful events to population health based on fatalities and injuries.
+The table bellow shows the `r nrow(top10_economic)` most harmful events to economy based on the caused damages.
 
 The top 3 events are : `` `r top10_economic[1,]$EVTYPE` ``, `` `r top10_economic[2,]$EVTYPE` `` and `` `r top10_economic[3,]$EVTYPE` ``. These 3 events make the **`r label_percent()(sum(top10_economic[1:3,]$ECONOMIC_IMPACT_RATIO))`** of the total impacts.
 
@@ -561,13 +567,13 @@ top10_economic %>%
   kable(col.names = c("Event", "Amount ($)", "Percentage"))
 ```
 
-Same as for the health impacts figure, the following shows the scale of economic impacts by event.
+Same as for the health impacts figure, the next figure shows the scale of economic impacts by event.
 
 ```{r, fig.width = 8, fig.height = 7}
 par(mar = c(6, 12, 2, 2))
 
 barplot(height = economic_impacts$ECONOMIC_IMPACT, names=economic_impacts$EVTYPE,
         horiz = TRUE, las=1, cex.names = .5, cex.axis = .8, col="#69b3a2",
-        main = "Economic impacts of each event types",
+        main = "Economic impacts of each event type",
         xlab = "Amount ($)")
 ```
